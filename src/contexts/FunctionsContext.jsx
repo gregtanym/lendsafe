@@ -203,33 +203,32 @@ export const FunctionsProvider = ({ children }) => {
 
         if (!usdBalanceObj || parseFloat(usdBalanceObj.value) <= 0) {
           console.log(`No USD balance found for ${borrowerAddress}. Nothing to claw back.`);
-          return;
+        } else {
+          clawbackAmount = usdBalanceObj.value;
+  
+          if (parseFloat(clawbackAmount) > 0) {
+            const clawbackTx = {
+              TransactionType: "Clawback",
+              Account: vaultWallet.address,
+              Amount: {
+                  currency: "USD",
+                  issuer: borrowerAddress,
+                  value: clawbackAmount
+              },
+            };
+            
+            try {
+              const prepared = await client.autofill(clawbackTx);
+              const signed = vaultWallet.sign(prepared);
+              await client.submitAndWait(signed.tx_blob);
+              console.log(`Clawed back ${clawbackAmount} USD.`);
+            } catch(e) {
+                console.warn("Clawback transaction failed (Amendment might be missing):", e.message);
+            }
+          }
         }
-
-        clawbackAmount = usdBalanceObj.value;
       } catch (err) {
         console.warn("Could not fetch lines for clawback amount", err);
-      }
-
-      if (parseFloat(clawbackAmount) > 0) {
-          const clawbackTx = {
-            TransactionType: "Clawback",
-            Account: vaultWallet.address,
-            Amount: {
-                currency: "USD",
-                issuer: borrowerAddress,
-                value: clawbackAmount
-            },
-          };
-          
-          try {
-            const prepared = await client.autofill(clawbackTx);
-            const signed = vaultWallet.sign(prepared);
-            await client.submitAndWait(signed.tx_blob);
-            console.log(`Clawed back ${clawbackAmount} USD.`);
-          } catch(e) {
-              console.warn("Clawback transaction failed (Amendment might be missing):", e.message);
-          }
       }
 
       // 2. Delete Credential
@@ -258,6 +257,13 @@ export const FunctionsProvider = ({ children }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ borrowerAddress }),
+      });
+
+      // 4. Update Borrower Status to Blacklisted
+      await fetch('/api/borrowers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account: borrowerAddress, status: 'Blacklisted' }),
       });
 
       setStatusMessage("Clawback complete. Loans defaulted.");
@@ -321,10 +327,10 @@ export const FunctionsProvider = ({ children }) => {
       const newBorrower = {
         account: borrowerAddress,
         companyName: formData.companyName,
-        contactEmail: "mock.email@example.com",
+        contactEmail: formData.contactEmail,
         creditScore: 750,
         riskScore: 85,
-        documentsURI: "ipfs://some_mock_uri_representing_the_docs"
+        documentsURI: "https://amethyst-unhappy-spider-959.mypinata.cloud/ipfs/bafybeih5qtms2p4jecjwx5wir7vpdu5heym4gdmse3skku2bscyhoojjha/"
       };
 
       await fetch('/api/borrowers', {

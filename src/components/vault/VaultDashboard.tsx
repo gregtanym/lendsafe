@@ -45,9 +45,9 @@ export default function VaultDashboard() {
 
         {/* Bottom row for profiles */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <BorrowerProfiles />
+          <BorrowerProfiles refreshSignal={refreshSignal} />
           <LenderProfiles />
-          <BlacklistedProfiles />
+          <BlacklistedProfiles refreshSignal={refreshSignal} />
         </div>
       </main>
     </div>

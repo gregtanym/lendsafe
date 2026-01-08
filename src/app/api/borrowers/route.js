@@ -59,13 +59,38 @@ export async function POST(request) {
       // Update existing borrower
       borrowers[existingIndex] = { ...borrowers[existingIndex], ...newBorrower };
     } else {
-      // Add new borrower
-      borrowers.push(newBorrower);
+      // Add new borrower with default status
+      borrowers.push({ ...newBorrower, status: 'Verified' });
     }
 
     writeData(borrowers);
 
     return NextResponse.json({ message: 'Borrower added/updated successfully.', borrower: newBorrower }, { status: 201 });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json({ message: 'Error processing request.' }, { status: 500 });
+  }
+}
+
+/**
+ * @param {import('next/server').NextRequest} request
+ */
+export async function PUT(request) {
+  try {
+    const borrowers = readData();
+    const { account, status } = await request.json();
+
+    const borrowerIndex = borrowers.findIndex(b => b.account === account);
+
+    if (borrowerIndex === -1) {
+      return NextResponse.json({ message: 'Borrower not found.' }, { status: 404 });
+    }
+
+    borrowers[borrowerIndex].status = status;
+    writeData(borrowers);
+
+    return NextResponse.json({ message: 'Borrower status updated.', borrower: borrowers[borrowerIndex] }, { status: 200 });
 
   } catch (error) {
     console.error('API Error:', error);
