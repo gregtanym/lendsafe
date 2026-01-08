@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { Header } from "@/components/Header";
 import { CirculatingSupply } from "./CirculatingSupply";
 import { TotalXRP } from "./TotalXRP";
@@ -12,6 +13,12 @@ import { BlacklistedProfiles } from "./BlacklistedProfiles";
 import { LoanRiskAnalysis } from "./LoanRiskAnalysis";
 
 export default function VaultDashboard() {
+  const [refreshSignal, setRefreshSignal] = useState(0);
+
+  const triggerRefresh = () => {
+    setRefreshSignal(prev => prev + 1);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Header />
@@ -20,15 +27,15 @@ export default function VaultDashboard() {
         
         {/* Top row for summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <CirculatingSupply />
-          <TotalXRP />
-          <ValueUnlocked />
+          <CirculatingSupply refreshSignal={refreshSignal} />
+          <TotalXRP refreshSignal={refreshSignal} />
+          <ValueUnlocked refreshSignal={refreshSignal} />
           <ProtocolFees />
         </div>
 
         {/* Loan History (Full Width) */}
         <div className="mb-8">
-          <LoanHistory />
+          <LoanHistory onRefresh={triggerRefresh} />
         </div>
 
         {/* Loan Risk Analysis (Full Width) */}

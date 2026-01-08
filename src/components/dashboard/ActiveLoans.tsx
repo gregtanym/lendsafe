@@ -52,6 +52,8 @@ export const ActiveLoans = ({ refreshSignal }) => {
       case 'Due': return 'bg-yellow-900 text-yellow-300';
       case 'Late': return 'bg-yellow-900 text-yellow-300'; 
       case 'Pending': return 'bg-gray-600 text-gray-300';
+      case 'Defaulted': return 'bg-red-900 text-red-300';
+      case 'Terminated': return 'bg-red-900 text-red-300';
       default: return 'bg-gray-700 text-gray-300';
     }
   };

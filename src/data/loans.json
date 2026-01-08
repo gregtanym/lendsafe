@@ -36,7 +36,7 @@
     "totalAmountOwed": "103.67",
     "term": 2,
     "interestRate": "3.67",
-    "status": "Active",
+    "status": "Defaulted",
     "issueDate": "2026-01-08",
     "installments": [
       {
@@ -49,7 +49,7 @@
         "id": 2,
         "dueDate": "2026-03-08",
         "amount": "51.84",
-        "status": "Due"
+        "status": "Terminated"
       }
     ]
   }

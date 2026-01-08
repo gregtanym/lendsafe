@@ -1,37 +1,50 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { useFunctions } from '@/contexts/FunctionsContext.jsx';
 
-export const LoanHistory = () => {
+export const LoanHistory = ({ onRefresh }: { onRefresh?: () => void }) => {
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [loans, setLoans] = useState([]);
   const [borrowers, setBorrowers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const { clawbackFunds, isLoading: isClawbackLoading } = useFunctions();
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [loansRes, borrowersRes] = await Promise.all([
+        fetch('/api/loans'),
+        fetch('/api/borrowers')
+      ]);
+
+      if (loansRes.ok && borrowersRes.ok) {
+        const loansData = await loansRes.json();
+        const borrowersData = await borrowersRes.json();
+        setLoans(loansData);
+        setBorrowers(borrowersData);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [loansRes, borrowersRes] = await Promise.all([
-          fetch('/api/loans'),
-          fetch('/api/borrowers')
-        ]);
-
-        if (loansRes.ok && borrowersRes.ok) {
-          const loansData = await loansRes.json();
-          const borrowersData = await borrowersRes.json();
-          setLoans(loansData);
-          setBorrowers(borrowersData);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
+
+  const handleClawback = async (borrowerAddress: string) => {
+    if (confirm("Are you sure you want to clawback funds and default all loans for this borrower? This action cannot be undone.")) {
+      await clawbackFunds(borrowerAddress);
+      // Refresh the table to show updated statuses
+      fetchData();
+      // Signal parent to refresh other metrics
+      if (onRefresh) onRefresh();
+    }
+  };
 
   const getBorrowerName = (address: string) => {
     const borrower = borrowers.find((b: any) => b.account === address);
@@ -58,8 +71,9 @@ export const LoanHistory = () => {
       case 'Repaid': return 'bg-green-900 text-green-300';
       case 'Defaulted': return 'bg-red-900 text-red-300';
       case 'Due': return 'bg-yellow-900 text-yellow-300';
-      case 'Late': return 'bg-yellow-900 text-yellow-300'; // For 'Paid (Late)' logic if needed
+      case 'Late': return 'bg-yellow-900 text-yellow-300';
       case 'Pending': return 'bg-gray-600 text-gray-300';
+      case 'Terminated': return 'bg-red-900/50 text-red-400';
       default: return 'bg-gray-700 text-gray-300';
     }
   };
@@ -116,7 +130,16 @@ export const LoanHistory = () => {
                   </td>
                   <td className="px-6 py-4">
                     {(loan.status === 'Active' || loan.status === 'Defaulted') && (
-                      <button className="text-xs font-medium text-red-500 hover:underline">Clawback</button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClawback(loan.borrowerAccount);
+                        }}
+                        disabled={isClawbackLoading}
+                        className="text-xs font-medium text-red-500 hover:underline disabled:text-gray-500"
+                      >
+                        {isClawbackLoading ? 'Processing...' : 'Clawback'}
+                      </button>
                     )}
                   </td>
                 </tr>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import { Client, Wallet, dropsToXrp } from 'xrpl';
 
-export const TotalXRP = () => {
+export const TotalXRP = ({ refreshSignal }: { refreshSignal?: number }) => {
   const [balance, setBalance] = useState<string>("Loading...");
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export const TotalXRP = () => {
         client.disconnect();
       }
     };
-  }, []);
+  }, [refreshSignal]);
 
   return (
     <div className="p-6 bg-gray-800 rounded-lg">

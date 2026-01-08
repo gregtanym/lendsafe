@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { LockOpenIcon } from '@heroicons/react/24/outline';
 import { Client, Wallet, dropsToXrp } from 'xrpl';
 
-export const ValueUnlocked = () => {
+export const ValueUnlocked = ({ refreshSignal }: { refreshSignal?: number }) => {
   const [unlockedValue, setUnlockedValue] = useState<string>("Loading...");
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export const ValueUnlocked = () => {
         client.disconnect();
       }
     };
-  }, []);
+  }, [refreshSignal]);
 
   return (
     <div className="p-6 bg-gray-800 rounded-lg">

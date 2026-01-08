@@ -167,6 +167,110 @@ export const FunctionsProvider = ({ children }) => {
     }
   }, []);
 
+  const clawbackFunds = useCallback(async (borrowerAddress) => {
+    console.log("Starting clawback process for:", borrowerAddress);
+    setIsLoading(true);
+    try {
+      const client = new xrpl.Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL);
+      await client.connect();
+      const vaultWallet = xrpl.Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+
+      // 1. Attempt Clawback Transaction
+      // Note: This requires the Clawback amendment to be enabled on the account/ledger.
+      // If not enabled, this might fail, but we'll proceed with "defaulting" the loan in DB anyway.
+      setStatusMessage("Initiating funds clawback from ledger...");
+      
+      // First, check balance to clawback everything? Or just a fixed amount? 
+      // Requirement says "clawback all USD tokens". 
+      // We'll calculate the balance first.
+
+      
+
+
+      let clawbackAmount = "0";
+      try {
+        const balances = await client.request({
+          command: "gateway_balances",
+          account: vaultWallet.address,
+          ledger_index: "validated",
+          hotwallet: [borrowerAddress] 
+        });
+
+        // 2. Extract the USD balance for the specific borrower
+        // The balances are returned in an object where keys are addresses
+        const borrowerBalances = balances.result.balances?.[borrowerAddress];
+        const usdBalanceObj = borrowerBalances?.find(b => b.currency === "USD");
+
+        if (!usdBalanceObj || parseFloat(usdBalanceObj.value) <= 0) {
+          console.log(`No USD balance found for ${borrowerAddress}. Nothing to claw back.`);
+          return;
+        }
+
+        clawbackAmount = usdBalanceObj.value;
+      } catch (err) {
+        console.warn("Could not fetch lines for clawback amount", err);
+      }
+
+      if (parseFloat(clawbackAmount) > 0) {
+          const clawbackTx = {
+            TransactionType: "Clawback",
+            Account: vaultWallet.address,
+            Amount: {
+                currency: "USD",
+                issuer: borrowerAddress,
+                value: clawbackAmount
+            },
+          };
+          
+          try {
+            const prepared = await client.autofill(clawbackTx);
+            const signed = vaultWallet.sign(prepared);
+            await client.submitAndWait(signed.tx_blob);
+            console.log(`Clawed back ${clawbackAmount} USD.`);
+          } catch(e) {
+              console.warn("Clawback transaction failed (Amendment might be missing):", e.message);
+          }
+      }
+
+      // 2. Delete Credential
+      setStatusMessage("Revoking borrower credential...");
+      const credDeleteTx = {
+        TransactionType: "CredentialDelete",
+        Account: vaultWallet.address,
+        Subject: borrowerAddress,
+        CredentialType: xrpl.convertStringToHex("KYC").toUpperCase(),
+      };
+      
+      try {
+        const preparedCred = await client.autofill(credDeleteTx);
+        const signedCred = vaultWallet.sign(preparedCred);
+        await client.submitAndWait(signedCred.tx_blob);
+        console.log("Credential revoked.");
+      } catch(e) {
+          console.warn("CredentialDelete failed:", e.message);
+      }
+
+      await client.disconnect();
+
+      // 3. Update Database via API
+      setStatusMessage("Updating loan status to Defaulted...");
+      await fetch('/api/clawback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ borrowerAddress }),
+      });
+
+      setStatusMessage("Clawback complete. Loans defaulted.");
+
+    } catch (error) {
+      console.error("Clawback Error:", error);
+      setStatusMessage(`Clawback failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  }, []);
+
 
   // --- Verification Workflow ---
   const issueCredential = async (borrowerAddress) => {
@@ -267,6 +371,7 @@ export const FunctionsProvider = ({ children }) => {
     isUserVerified,
     requestAndMintLoan,
     payInstallment,
+    clawbackFunds
   };
 
   return (

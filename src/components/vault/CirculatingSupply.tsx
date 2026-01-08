@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { CircleStackIcon } from '@heroicons/react/24/outline';
 import { Client, Wallet } from 'xrpl';
 
-export const CirculatingSupply = () => {
+export const CirculatingSupply = ({ refreshSignal }: { refreshSignal?: number }) => {
   const [supply, setSupply] = useState<string>("Loading...");
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export const CirculatingSupply = () => {
         client.disconnect();
       }
     };
-  }, []);
+  }, [refreshSignal]);
 
   return (
     <div className="p-6 bg-gray-800 rounded-lg">
