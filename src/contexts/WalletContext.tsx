@@ -37,6 +37,16 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const { isInstalled } = useGemWallet();
   const { isUserVerified } = useFunctions();
 
+  const safeGetAddress = (seed: string | undefined): string | null => {
+    if (!seed) return null;
+    try {
+      return Wallet.fromSeed(seed).address;
+    } catch (e) {
+      console.warn("Invalid seed provided in env:", seed);
+      return null;
+    }
+  };
+
   const connectWallet = async () => {
     if (!isInstalled) {
       alert("Please install GemWallet extension.");
@@ -55,22 +65,31 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         setIsConnected(true);
 
         try {
-          const borrowerWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VERIFIED_BORROWER_WALLET_SEED!);
-          const lenderWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_LENDER_WALLET_SEED!);
-          const vaultWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED!);
-          const merchantWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_MERCHANT_WALLET_SEED!);
+          // Derive addresses from seeds safely
+          const borrowerAddresses = [
+            safeGetAddress(process.env.NEXT_PUBLIC_VERIFIED_BORROWER_WALLET_SEED),
+            safeGetAddress(process.env.NEXT_PUBLIC_VERIFIED_BORROWER2_WALLET_SEED)
+          ].filter(Boolean); // Remove nulls
 
-          if (walletData.address === borrowerWallet.address) {
+          const lenderAddresses = [
+            safeGetAddress(process.env.NEXT_PUBLIC_LENDER_WALLET_SEED),
+            safeGetAddress(process.env.NEXT_PUBLIC_LENDER2_WALLET_SEED)
+          ].filter(Boolean);
+
+          const vaultAddress = safeGetAddress(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+          const merchantAddress = safeGetAddress(process.env.NEXT_PUBLIC_MERCHANT_WALLET_SEED);
+
+          if (borrowerAddresses.includes(walletData.address)) {
             setRole("borrower");
             setIsVerificationLoading(true);
             const verificationStatus = await isUserVerified(walletData.address);
             setIsVerified(verificationStatus);
             setIsVerificationLoading(false);
-          } else if (walletData.address === lenderWallet.address) {
+          } else if (lenderAddresses.includes(walletData.address)) {
             setRole("lender");
-          } else if (walletData.address === vaultWallet.address) {
+          } else if (walletData.address === vaultAddress) {
             setRole("vault");
-          } else if (walletData.address === merchantWallet.address) {
+          } else if (walletData.address === merchantAddress) {
             setRole("merchant");
           } else {
             setRole(null);

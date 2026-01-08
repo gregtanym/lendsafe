@@ -160,5 +160,35 @@
         "status": "Terminated"
       }
     ]
+  },
+  {
+    "id": "LN-MSQ72Z",
+    "borrowerAccount": "r9PVikJnAt4KcxBzrENNyaEYmYmF1SmGk3",
+    "amount": "200",
+    "totalAmountOwed": "207.52",
+    "term": 3,
+    "interestRate": "3.76",
+    "status": "Active",
+    "issueDate": "2026-01-08",
+    "installments": [
+      {
+        "id": 1,
+        "dueDate": "2026-02-08",
+        "amount": "69.17",
+        "status": "Due"
+      },
+      {
+        "id": 2,
+        "dueDate": "2026-03-08",
+        "amount": "69.17",
+        "status": "Pending"
+      },
+      {
+        "id": 3,
+        "dueDate": "2026-04-08",
+        "amount": "69.17",
+        "status": "Pending"
+      }
+    ]
   }
 ]

@@ -71,7 +71,8 @@ export const LiquidityPoolHealth = () => {
     };
   }, []);
 
-  const utilizationRate = totalXrp > 0 ? (circulatingUsd / totalXrp) * 100 : 0;
+  const borrowedXrp = circulatingUsd * 0.1;
+  const utilizationRate = totalXrp > 0 ? (borrowedXrp / totalXrp) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -96,8 +97,11 @@ export const LiquidityPoolHealth = () => {
           <span className="font-mono">{totalXrp.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-400">Total Borrowed (USD):</span>
-          <span className="font-mono">{circulatingUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })} USD</span>
+          <span className="text-gray-400">Total Borrowed:</span>
+          <span className="font-mono">
+            {borrowedXrp.toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP 
+            <span className="text-gray-500 ml-1">({circulatingUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })} USD)</span>
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">Utilization Rate:</span>
