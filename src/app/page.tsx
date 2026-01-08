@@ -4,6 +4,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import BorrowerDashboard from "@/components/dashboard/BorrowerDashboard";
 import LenderDashboard from "@/components/lender/LenderDashboard";
 import VaultDashboard from "@/components/vault/VaultDashboard";
+import MerchantPage from "@/components/merchant/MerchantPage";
 import { Header } from "@/components/Header";
 
 export default function Home() {
@@ -18,6 +19,9 @@ export default function Home() {
     }
     if (role === 'vault') {
       return <VaultDashboard />;
+    }
+    if (role === 'merchant') {
+      return <MerchantPage />;
     }
   }
 

@@ -52,6 +52,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           const borrowerWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VERIFIED_BORROWER_WALLET_SEED!);
           const lenderWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_LENDER_WALLET_SEED!);
           const vaultWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED!);
+          const merchantWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_MERCHANT_WALLET_SEED!);
 
           if (walletData.address === borrowerWallet.address) {
             setRole("borrower");
@@ -59,6 +60,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             setRole("lender");
           } else if (walletData.address === vaultWallet.address) {
             setRole("vault");
+          } else if (walletData.address === merchantWallet.address) {
+            setRole("merchant");
           } else {
             setRole(null);
           }
