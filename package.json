@@ -10,9 +10,13 @@
   },
   "dependencies": {
     "@gemwallet/api": "^3.8.0",
+    "@heroicons/react": "^2.2.0",
+    "@types/recharts": "^1.8.29",
+    "dotenv": "^17.2.3",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "recharts": "^3.6.0",
     "xrpl": "^4.5.0"
   },
   "devDependencies": {

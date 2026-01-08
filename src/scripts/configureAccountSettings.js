@@ -2,11 +2,11 @@ import xrpl from "xrpl";
 
 async function enableClawback() {
   // 1. Define your credentials
-  const TEST_NET = "wss://s.altnet.rippletest.net:51233";
+  const TEST_NET = "wss://s.altnet.rippletest.net:51233/";
   const client = new xrpl.Client(TEST_NET);
   
   // Replace with your actual seed/secret
-  const wallet = xrpl.Wallet.fromSeed("YOUR_TESTNET_SEED_HERE");
+  const wallet = xrpl.Wallet.fromSeed("sEdVY4LBp7xqCYytJ4aWZjx45kYMSm7");
 
   try {
     await client.connect();
