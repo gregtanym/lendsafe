@@ -44,12 +44,13 @@ export const ActiveLoans = ({ refreshSignal }) => {
   };
 
   const getStatusColor = (status: string) => {
-    if (status === 'Paid (Late)') return 'bg-yellow-900 text-yellow-300';
+    // if (status === 'Paid (Late)') return 'bg-yellow-900 text-yellow-300';
     if (status.includes('Paid')) return 'bg-green-900 text-green-300';
     switch (status) {
       case 'Active': return 'bg-blue-900 text-blue-300';
       case 'Repaid': return 'bg-green-900 text-green-300';
       case 'Due': return 'bg-yellow-900 text-yellow-300';
+      case 'Late': return 'bg-yellow-900 text-yellow-300'; 
       case 'Pending': return 'bg-gray-600 text-gray-300';
       default: return 'bg-gray-700 text-gray-300';
     }

@@ -8,10 +8,16 @@ export const ValueUnlocked = () => {
   const [unlockedValue, setUnlockedValue] = useState<string>("Loading...");
 
   useEffect(() => {
+    let isMounted = true;
+    const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!, {
+      connectionTimeout: 10000
+    });
+
     const fetchData = async () => {
       try {
-        const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!);
         await client.connect();
+        if (!isMounted) return;
+
         const vaultWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED!);
         
         // 1. Fetch Total XRP Balance
@@ -20,6 +26,8 @@ export const ValueUnlocked = () => {
           account: vaultWallet.address,
           ledger_index: "validated"
         });
+        
+        if (!isMounted) return;
         const totalXrp = parseFloat(dropsToXrp(accountInfo.result.account_data.Balance));
 
         // 2. Fetch Circulating USD Supply
@@ -30,6 +38,8 @@ export const ValueUnlocked = () => {
           strict: true,
           hotwallet: [] 
         });
+
+        if (!isMounted) return;
         const usdSupply = parseFloat(gatewayBalances.result.obligations?.["USD"] || "0");
 
         // 3. Calculate Unlocked Value
@@ -39,14 +49,26 @@ export const ValueUnlocked = () => {
         
         setUnlockedValue(unlockedXrp.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
         
-        await client.disconnect();
       } catch (error) {
-        console.error("Error calculating unlocked value:", error);
-        setUnlockedValue("Error");
+        if (isMounted) {
+          console.error("Error calculating unlocked value:", error);
+          setUnlockedValue("Error");
+        }
+      } finally {
+        if (client.isConnected()) {
+          await client.disconnect();
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+      if (client.isConnected()) {
+        client.disconnect();
+      }
+    };
   }, []);
 
   return (

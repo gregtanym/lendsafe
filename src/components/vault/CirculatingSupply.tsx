@@ -8,10 +8,16 @@ export const CirculatingSupply = () => {
   const [supply, setSupply] = useState<string>("Loading...");
 
   useEffect(() => {
+    let isMounted = true;
+    const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!, {
+      connectionTimeout: 10000
+    });
+
     const fetchSupply = async () => {
       try {
-        const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!);
         await client.connect();
+        if (!isMounted) return;
+
         const vaultWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED!);
         
         const response = await client.request({
@@ -22,19 +28,33 @@ export const CirculatingSupply = () => {
           hotwallet: [] 
         });
         
+        if (!isMounted) return;
+
         // The obligations field contains the total currency issued
         const obligations = response.result.obligations;
         const usdSupply = obligations?.["USD"] || "0";
         
         setSupply(parseFloat(usdSupply).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        await client.disconnect();
       } catch (error) {
-        console.error("Error fetching circulating supply:", error);
-        setSupply("Error");
+        if (isMounted) {
+          console.error("Error fetching circulating supply:", error);
+          setSupply("Error");
+        }
+      } finally {
+        if (client.isConnected()) {
+          await client.disconnect();
+        }
       }
     };
 
     fetchSupply();
+
+    return () => {
+      isMounted = false;
+      if (client.isConnected()) {
+        client.disconnect();
+      }
+    };
   }, []);
 
   return (
@@ -44,7 +64,7 @@ export const CirculatingSupply = () => {
         <div>
           <p className="text-sm text-gray-400">USD Circulating Supply</p>
           <p className="text-2xl font-bold">{supply}</p>
-          <div className='text-xs'>1 USD = 0.1 XRP</div>
+          <div className='text-xs text-gray-500'>1 USD = 0.1 XRP</div>
         </div>
       </div>
     </div>

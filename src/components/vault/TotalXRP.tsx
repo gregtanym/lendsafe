@@ -8,10 +8,19 @@ export const TotalXRP = () => {
   const [balance, setBalance] = useState<string>("Loading...");
 
   useEffect(() => {
+    let isMounted = true;
+    // Increase timeout to 10s to handle flaky connections
+    const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!, {
+      connectionTimeout: 10000
+    });
+
     const fetchBalance = async () => {
       try {
-        const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!);
+        console.log("Connecting to XRPL client...");
         await client.connect();
+        
+        if (!isMounted) return;
+
         const vaultWallet = Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED!);
         
         const response = await client.request({
@@ -19,19 +28,39 @@ export const TotalXRP = () => {
           account: vaultWallet.address,
           ledger_index: "validated"
         });
+
+        console.log(response);
         
+        if (!isMounted) return;
+
         const xrpBalance = dropsToXrp(response.result.account_data.Balance);
         // Format to 2 decimal places
         setBalance(parseFloat(xrpBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
         
-        await client.disconnect();
       } catch (error) {
-        console.error("Error fetching XRP balance:", error);
-        setBalance("Error");
+        if (isMounted) {
+          console.error("Error fetching XRP balance:", error);
+          setBalance("Error");
+        }
+      } finally {
+        // Only disconnect if we are still mounted and done, OR if we are just cleaning up connection resources.
+        // Actually, for single-shot requests, we always disconnect.
+        if (client.isConnected()) {
+          await client.disconnect();
+          console.log("Disconnected from XRPL client");
+        }
       }
     };
 
     fetchBalance();
+
+    return () => {
+      isMounted = false;
+      // Force disconnect on unmount to prevent hanging connections
+      if (client.isConnected()) {
+        client.disconnect();
+      }
+    };
   }, []);
 
   return (

@@ -13,7 +13,7 @@
         "id": 1,
         "dueDate": "2026-01-05",
         "amount": "172.95",
-        "status": "Paid (Late)"
+        "status": "Late"
       },
       {
         "id": 2,
@@ -26,6 +26,30 @@
         "dueDate": "2026-04-08",
         "amount": "172.95",
         "status": "Paid"
+      }
+    ]
+  },
+  {
+    "id": "LN-LIDYU4",
+    "borrowerAccount": "r9PVikJnAt4KcxBzrENNyaEYmYmF1SmGk3",
+    "amount": "100",
+    "totalAmountOwed": "103.67",
+    "term": 2,
+    "interestRate": "3.67",
+    "status": "Active",
+    "issueDate": "2026-01-08",
+    "installments": [
+      {
+        "id": 1,
+        "dueDate": "2026-02-08",
+        "amount": "51.84",
+        "status": "Paid"
+      },
+      {
+        "id": 2,
+        "dueDate": "2026-03-08",
+        "amount": "51.84",
+        "status": "Due"
       }
     ]
   }

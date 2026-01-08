@@ -46,22 +46,6 @@ export const LoanRiskAnalysis = () => {
           ))}
         </ul>
       </div>
-
-      {/* News Section */}
-      <div>
-        <h4 className="text-md font-semibold mb-3 flex items-center text-gray-300">
-          <NewspaperIcon className="h-5 w-5 mr-2" />
-          Related News
-        </h4>
-        <ul className="space-y-3">
-          {news.map((item, index) => (
-            <li key={index} className="p-3 bg-gray-700/50 rounded-lg">
-                <p className="text-sm text-gray-300">{item.title}</p>
-                <p className="text-xs text-blue-400 font-semibold">{item.source}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 };

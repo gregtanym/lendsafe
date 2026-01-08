@@ -1,70 +1,64 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
-
-// Mock data for loan history including installment plans
-const history = [
-  {
-    id: "LN-001",
-    borrower: "rP...f4x",
-    amount: "5,000 USD",
-    date: "2024-05-01",
-    status: "Repaid",
-    repaidAmount: "5,025 USD",
-    installments: [
-        { id: 1, dueDate: "2024-06-01", amount: "2,512.50 USD", status: "On Time" },
-        { id: 2, dueDate: "2024-07-01", amount: "2,512.50 USD", status: "On Time" },
-    ]
-  },
-  {
-    id: "LN-002",
-    borrower: "rU...p8g",
-    amount: "10,000 USD",
-    date: "2024-05-15",
-    status: "Active",
-    outstandingAmount: "5,050 USD",
-    installments: [
-        { id: 1, dueDate: "2024-06-15", amount: "5,000 USD", status: "On Time" },
-        { id: 2, dueDate: "2024-07-15", amount: "5,000 USD", status: "Pending" },
-    ]
-  },
-  {
-    id: "LN-003",
-    borrower: "rE...v7h",
-    amount: "7,500 USD",
-    date: "2024-04-20",
-    status: "Defaulted",
-    outstandingAmount: "7,800 USD",
-    installments: [
-        { id: 1, dueDate: "2024-05-20", amount: "3,750 USD", status: "Late" },
-        { id: 2, dueDate: "2024-06-20", amount: "3,750 USD", status: "Pending" },
-    ]
-  },
-    {
-    id: "LN-004",
-    borrower: "rD...q2c",
-    amount: "50,000 USD",
-    date: "2024-06-01",
-    status: "Active",
-    outstandingAmount: "50,150 USD",
-    installments: [
-        { id: 1, dueDate: "2024-07-01", amount: "25,075 USD", status: "Pending" },
-        { id: 2, dueDate: "2024-08-01", amount: "25,075 USD", status: "Pending" },
-    ]
-  },
-];
 
 export const LoanHistory = () => {
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [loans, setLoans] = useState([]);
+  const [borrowers, setBorrowers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [loansRes, borrowersRes] = await Promise.all([
+          fetch('/api/loans'),
+          fetch('/api/borrowers')
+        ]);
+
+        if (loansRes.ok && borrowersRes.ok) {
+          const loansData = await loansRes.json();
+          const borrowersData = await borrowersRes.json();
+          setLoans(loansData);
+          setBorrowers(borrowersData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const getBorrowerName = (address: string) => {
+    const borrower = borrowers.find((b: any) => b.account === address);
+    return borrower ? borrower.companyName : address;
+  };
+
+  const calculateOutstanding = (loan: any) => {
+    if (loan.status === 'Repaid') return '0.00';
+    
+    return loan.installments
+      .reduce((total: number, inst: any) => {
+        if (!inst.status.includes('Paid')) {
+          return total + parseFloat(inst.amount);
+        }
+        return total;
+      }, 0)
+      .toFixed(2);
+  };
 
   const getStatusColor = (status: string) => {
+    if (status.includes('Paid')) return 'bg-green-900 text-green-300';
     switch (status) {
       case 'Active': return 'bg-blue-900 text-blue-300';
       case 'Repaid': return 'bg-green-900 text-green-300';
       case 'Defaulted': return 'bg-red-900 text-red-300';
-      case 'On Time': return 'bg-green-900/80 text-green-300';
-      case 'Late': return 'bg-yellow-900/80 text-yellow-300';
+      case 'Due': return 'bg-yellow-900 text-yellow-300';
+      case 'Late': return 'bg-yellow-900 text-yellow-300'; // For 'Paid (Late)' logic if needed
       case 'Pending': return 'bg-gray-600 text-gray-300';
       default: return 'bg-gray-700 text-gray-300';
     }
@@ -73,6 +67,14 @@ export const LoanHistory = () => {
   const handleRowClick = (id: string) => {
     setExpandedRowId(expandedRowId === id ? null : id);
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-gray-800 rounded-lg h-full flex justify-center items-center">
+        <p>Loading loan history...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-800 rounded-lg h-full">
@@ -92,23 +94,23 @@ export const LoanHistory = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {history.map((loan: any) => (
+            {loans.map((loan: any) => (
               <>
                 <tr key={loan.id} onClick={() => handleRowClick(loan.id)} className="hover:bg-gray-700/50 cursor-pointer">
                   <td className="px-6 py-4">
                     {expandedRowId === loan.id ? <ChevronDownIcon className="h-4 w-4"/> : <ChevronRightIcon className="h-4 w-4"/>}
                   </td>
                   <td className="px-6 py-4 font-mono">{loan.id}</td>
-                  <td className="px-6 py-4 font-mono">{loan.borrower}</td>
-                  <td className="px-6 py-4">{loan.amount}</td>
+                  <td className="px-6 py-4 font-medium text-white">{getBorrowerName(loan.borrowerAccount)}</td>
+                  <td className="px-6 py-4">{loan.amount} USD</td>
                   <td className="px-6 py-4">
                     {loan.status === 'Repaid' ? (
-                      <div><p>{loan.repaidAmount}</p><p className="text-xs text-gray-400">(Repaid)</p></div>
+                      <div><p>{loan.totalAmountOwed} USD</p><p className="text-xs text-gray-400">(Total Repaid)</p></div>
                     ) : (
-                      <div><p>{loan.outstandingAmount}</p><p className="text-xs text-gray-400">(Outstanding)</p></div>
+                      <div><p>{calculateOutstanding(loan)} USD</p><p className="text-xs text-gray-400">(Outstanding)</p></div>
                     )}
                   </td>
-                  <td className="px-6 py-4">{loan.date}</td>
+                  <td className="px-6 py-4">{loan.issueDate}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(loan.status)}`}>{loan.status}</span>
                   </td>
@@ -135,7 +137,7 @@ export const LoanHistory = () => {
                             {loan.installments.map((inst: any) => (
                               <tr key={inst.id} className="border-t border-gray-700">
                                 <td className="px-4 py-2">{inst.dueDate}</td>
-                                <td className="px-4 py-2">{inst.amount}</td>
+                                <td className="px-4 py-2">{inst.amount} USD</td>
                                 <td className="px-4 py-2">
                                   <span className={`px-2 py-1 font-medium rounded-full ${getStatusColor(inst.status)}`}>{inst.status}</span>
                                 </td>

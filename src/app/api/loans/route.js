@@ -98,7 +98,7 @@ export async function PUT(request) {
 
     let newStatus = 'Paid';
     if (today > dueDate) {
-      newStatus = 'Paid (Late)';
+      newStatus = 'Late';
     }
 
     loans[loanIndex].installments[installmentIndex].status = newStatus;
