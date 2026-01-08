@@ -21,11 +21,11 @@ export const LiquidityPoolHealth = () => {
       <div className="space-y-2 text-sm mb-6">
         <div className="flex justify-between">
           <span className="text-gray-400">Total Deposited:</span>
-          <span className="font-mono">{totalDeposited.toLocaleString()} wUSD</span>
+          <span className="font-mono">{totalDeposited.toLocaleString()} USD</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">Total Borrowed:</span>
-          <span className="font-mono">{totalBorrowed.toLocaleString()} wUSD</span>
+          <span className="font-mono">{totalBorrowed.toLocaleString()} USD</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">Utilization Rate:</span>

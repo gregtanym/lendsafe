@@ -23,11 +23,11 @@ const mockDetails = {
     riskScore: "B+",
     poc: "John Doe (john.doe@acme.inc)",
     loanHistory: [
-        { id: "LN-001", amount: "5,000 wUSD", status: "Repaid" },
-        { id: "LN-004", amount: "50,000 wUSD", status: "Active" },
+        { id: "LN-001", amount: "5,000 USD", status: "Repaid" },
+        { id: "LN-004", amount: "50,000 USD", status: "Active" },
     ],
     legalDocs: ["Master Loan Agreement.pdf", "Security Agreement.pdf"],
-    onChainActivity: ["Large token transfer detected (2M wUSD)", "Multiple failed transactions in the last 24h"],
+    onChainActivity: ["Large token transfer detected (2M USD)", "Multiple failed transactions in the last 24h"],
 };
 
 export const BorrowerDetailModal = ({ isOpen, onClose, borrower }: BorrowerDetailModalProps) => {

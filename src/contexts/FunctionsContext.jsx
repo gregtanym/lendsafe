@@ -7,6 +7,7 @@ import {
   useCallback
 } from "react";
 import xrpl from "xrpl";
+import { submitTransaction } from "@gemwallet/api";
 
 const FunctionsContext = createContext(undefined);
 
@@ -32,18 +33,18 @@ export const FunctionsProvider = ({ children }) => {
     };
 
     try {
-      setStatusMessage(`Minting and sending ${amount} wUSD...`);
+      setStatusMessage(`Minting and sending ${amount} USD...`);
       const prepared = await client.autofill(paymentTx);
       const signed = vaultWallet.sign(prepared);
       const result = await client.submitAndWait(signed.tx_blob);
 
       if (result.result.meta.TransactionResult !== 'tesSUCCESS') {
         if (result.result.meta.TransactionResult === 'tecNO_LINE') {
-          throw new Error("Minting failed: The borrower has not set a trust line to the vault for wUSD.");
+          throw new Error("Minting failed: The borrower has not set a trust line to the vault for USD.");
         }
         throw new Error(`Minting failed: ${result.result.meta.TransactionResult}`);
       }
-      console.log("wUSD minted and sent successfully. Hash:", result.result.hash);
+      console.log("USD minted and sent successfully. Hash:", result.result.hash);
       return result.result.hash;
 
     } finally {
@@ -61,7 +62,6 @@ export const FunctionsProvider = ({ children }) => {
       
       setStatusMessage("Saving loan details to database...");
 
-      // Calculate total amount owed with interest
       const principal = parseFloat(amount);
       const rate = parseFloat(interestRate);
       const totalAmountOwed = principal * (1 + rate / 100);
@@ -109,6 +109,64 @@ export const FunctionsProvider = ({ children }) => {
       setTimeout(() => setStatusMessage(null), 5000);
     }
   }, []);
+
+  const payInstallment = useCallback(async (loanId, installmentId, amount) => {
+    setIsLoading(true);
+    try {
+      setStatusMessage("Processing payment via GemWallet...");
+      
+      const vaultWallet = xrpl.Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+      
+      // 1 USD = 0.1 XRP
+      const xrpAmount = amount * 0.1;
+      // Ensure we don't exceed 6 decimal places (drops)
+      const sanitizedXrpAmount = xrpAmount.toFixed(6);
+      const dropsAmount = xrpl.xrpToDrops(sanitizedXrpAmount);
+
+      const paymentTx = {
+        TransactionType: "Payment",
+        Destination: vaultWallet.address,
+        Amount: dropsAmount, 
+      };
+
+      console.log(`Requesting payment of ${sanitizedXrpAmount} XRP (${dropsAmount} drops) to Vault...`);
+      
+      const response = await submitTransaction({
+        transaction: paymentTx
+      });
+
+      if (response.type === "reject") {
+        throw new Error("User rejected the transaction.");
+      }
+
+      if (response.result?.hash) {
+        setStatusMessage("Payment successful! Updating loan status...");
+        
+        // Update database
+        const apiResponse = await fetch('/api/loans', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ loanId, installmentId }),
+        });
+
+        if (!apiResponse.ok) {
+            throw new Error("Payment made but failed to update database.");
+        }
+
+        setStatusMessage("Installment paid successfully!");
+      } else {
+         throw new Error("Payment transaction failed.");
+      }
+
+    } catch (error) {
+      console.error("Payment Error:", error);
+      setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  }, []);
+
 
   // --- Verification Workflow ---
   const issueCredential = async (borrowerAddress) => {
@@ -208,6 +266,7 @@ export const FunctionsProvider = ({ children }) => {
     startVerificationWorkflow,
     isUserVerified,
     requestAndMintLoan,
+    payInstallment,
   };
 
   return (

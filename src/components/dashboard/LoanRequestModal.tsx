@@ -63,7 +63,7 @@ export const LoanRequestModal = ({ isOpen, onClose, onLoanCreated }) => {
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-300">Loan Amount (wUSD)</label>
+            <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-300">Loan Amount (USD)</label>
             <input
               type="number"
               id="amount"

@@ -6,26 +6,26 @@
     "totalAmountOwed": "518.85",
     "term": 3,
     "interestRate": "3.77",
-    "status": "Active",
-    "issueDate": "2026-01-08",
+    "status": "Repaid",
+    "issueDate": "2026-01-01",
     "installments": [
       {
         "id": 1,
-        "dueDate": "2026-02-08",
+        "dueDate": "2026-01-05",
         "amount": "172.95",
-        "status": "Due"
+        "status": "Paid (Late)"
       },
       {
         "id": 2,
         "dueDate": "2026-03-08",
         "amount": "172.95",
-        "status": "Pending"
+        "status": "Paid"
       },
       {
         "id": 3,
         "dueDate": "2026-04-08",
         "amount": "172.95",
-        "status": "Pending"
+        "status": "Paid"
       }
     ]
   }

@@ -46,7 +46,7 @@ export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdra
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-300">
-              Amount (wUSD)
+              Amount (USD)
             </label>
             <input
               type="number"

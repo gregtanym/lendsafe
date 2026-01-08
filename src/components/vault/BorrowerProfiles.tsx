@@ -15,25 +15,25 @@ type Borrower = {
 const borrowers: Borrower[] = [
   {
     address: "rP...f4x",
-    totalBorrowed: "15,000 wUSD",
+    totalBorrowed: "15,000 USD",
     creditScore: "Good",
     memberSince: "2024-01-15",
   },
   {
     address: "rU...p8g",
-    totalBorrowed: "2,500 wUSD",
+    totalBorrowed: "2,500 USD",
     creditScore: "Excellent",
     memberSince: "2024-02-20",
   },
   {
     address: "rD...q2c",
-    totalBorrowed: "50,000 wUSD",
+    totalBorrowed: "50,000 USD",
     creditScore: "Fair",
     memberSince: "2024-03-10",
   },
   {
     address: "rE...v7h",
-    totalBorrowed: "7,500 wUSD",
+    totalBorrowed: "7,500 USD",
     creditScore: "Poor",
     memberSince: "2024-04-05",
   },

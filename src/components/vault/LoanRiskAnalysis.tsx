@@ -16,7 +16,7 @@ const alerts = [
   },
     {
     level: "Low",
-    message: "Market volatility may affect wUSD peg. Monitor liquidity.",
+    message: "Market volatility may affect USD peg. Monitor liquidity.",
     color: "text-blue-400",
   },
 ];

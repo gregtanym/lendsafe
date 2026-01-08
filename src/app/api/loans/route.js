@@ -64,3 +64,63 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Error processing request.' }, { status: 500 });
   }
 }
+
+/**
+ * @param {import('next/server').NextRequest} request
+ */
+export async function PUT(request) {
+  try {
+    const loans = readData();
+    const { loanId, installmentId } = await request.json();
+
+    const loanIndex = loans.findIndex(l => l.id === loanId);
+    if (loanIndex === -1) {
+      return NextResponse.json({ message: 'Loan not found.' }, { status: 404 });
+    }
+
+    const loan = loans[loanIndex];
+    const installmentIndex = loan.installments.findIndex(i => i.id === installmentId);
+
+    if (installmentIndex === -1) {
+      return NextResponse.json({ message: 'Installment not found.' }, { status: 404 });
+    }
+
+    const installment = loan.installments[installmentIndex];
+    const today = new Date();
+    const dueDate = new Date(installment.dueDate);
+    
+    // Determine if late
+    // We compare YYYY-MM-DD strings usually or use date objects. 
+    // Assuming dueDate is YYYY-MM-DD.
+    // Setting time to midnight for accurate date comparison
+    today.setHours(0,0,0,0);
+    dueDate.setHours(0,0,0,0);
+
+    let newStatus = 'Paid';
+    if (today > dueDate) {
+      newStatus = 'Paid (Late)';
+    }
+
+    loans[loanIndex].installments[installmentIndex].status = newStatus;
+    
+    // Find the NEXT pending installment and mark it as Due
+    const nextInstallmentIndex = loans[loanIndex].installments.findIndex(i => i.status === 'Pending');
+    if (nextInstallmentIndex !== -1) {
+        loans[loanIndex].installments[nextInstallmentIndex].status = 'Due';
+    }
+
+    // Check if all installments are paid to update loan status
+    const allPaid = loans[loanIndex].installments.every(i => i.status.includes('Paid'));
+    if (allPaid) {
+        loans[loanIndex].status = 'Repaid';
+    }
+
+    writeData(loans);
+
+    return NextResponse.json({ message: 'Installment updated successfully.', loan: loans[loanIndex] }, { status: 200 });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json({ message: 'Error processing request.' }, { status: 500 });
+  }
+}

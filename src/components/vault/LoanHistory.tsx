@@ -8,49 +8,49 @@ const history = [
   {
     id: "LN-001",
     borrower: "rP...f4x",
-    amount: "5,000 wUSD",
+    amount: "5,000 USD",
     date: "2024-05-01",
     status: "Repaid",
-    repaidAmount: "5,025 wUSD",
+    repaidAmount: "5,025 USD",
     installments: [
-        { id: 1, dueDate: "2024-06-01", amount: "2,512.50 wUSD", status: "On Time" },
-        { id: 2, dueDate: "2024-07-01", amount: "2,512.50 wUSD", status: "On Time" },
+        { id: 1, dueDate: "2024-06-01", amount: "2,512.50 USD", status: "On Time" },
+        { id: 2, dueDate: "2024-07-01", amount: "2,512.50 USD", status: "On Time" },
     ]
   },
   {
     id: "LN-002",
     borrower: "rU...p8g",
-    amount: "10,000 wUSD",
+    amount: "10,000 USD",
     date: "2024-05-15",
     status: "Active",
-    outstandingAmount: "5,050 wUSD",
+    outstandingAmount: "5,050 USD",
     installments: [
-        { id: 1, dueDate: "2024-06-15", amount: "5,000 wUSD", status: "On Time" },
-        { id: 2, dueDate: "2024-07-15", amount: "5,000 wUSD", status: "Pending" },
+        { id: 1, dueDate: "2024-06-15", amount: "5,000 USD", status: "On Time" },
+        { id: 2, dueDate: "2024-07-15", amount: "5,000 USD", status: "Pending" },
     ]
   },
   {
     id: "LN-003",
     borrower: "rE...v7h",
-    amount: "7,500 wUSD",
+    amount: "7,500 USD",
     date: "2024-04-20",
     status: "Defaulted",
-    outstandingAmount: "7,800 wUSD",
+    outstandingAmount: "7,800 USD",
     installments: [
-        { id: 1, dueDate: "2024-05-20", amount: "3,750 wUSD", status: "Late" },
-        { id: 2, dueDate: "2024-06-20", amount: "3,750 wUSD", status: "Pending" },
+        { id: 1, dueDate: "2024-05-20", amount: "3,750 USD", status: "Late" },
+        { id: 2, dueDate: "2024-06-20", amount: "3,750 USD", status: "Pending" },
     ]
   },
     {
     id: "LN-004",
     borrower: "rD...q2c",
-    amount: "50,000 wUSD",
+    amount: "50,000 USD",
     date: "2024-06-01",
     status: "Active",
-    outstandingAmount: "50,150 wUSD",
+    outstandingAmount: "50,150 USD",
     installments: [
-        { id: 1, dueDate: "2024-07-01", amount: "25,075 wUSD", status: "Pending" },
-        { id: 2, dueDate: "2024-08-01", amount: "25,075 wUSD", status: "Pending" },
+        { id: 1, dueDate: "2024-07-01", amount: "25,075 USD", status: "Pending" },
+        { id: 2, dueDate: "2024-08-01", amount: "25,075 USD", status: "Pending" },
     ]
   },
 ];

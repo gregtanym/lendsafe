@@ -24,12 +24,12 @@ export const FundsDeposited = () => {
             <BanknotesIcon className="h-8 w-8 text-blue-400 mr-4" />
             <div>
               <p className="text-sm text-gray-400">Total Funds Deposited</p>
-              <p className="text-2xl font-bold">{depositedAmount} wUSD</p>
+              <p className="text-2xl font-bold">{depositedAmount} USD</p>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-700">
             <p className="text-sm text-gray-400">Your Wallet Balance</p>
-            <p className="font-semibold">{walletBalance} wUSD</p>
+            <p className="font-semibold">{walletBalance} USD</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">

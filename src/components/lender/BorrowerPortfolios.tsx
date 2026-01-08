@@ -5,19 +5,19 @@ const borrowers = [
   {
     address: "rP...f4x",
     activeLoans: 2,
-    totalBorrowed: "15,000 wUSD",
+    totalBorrowed: "15,000 USD",
     creditScore: "Good",
   },
   {
     address: "rU...p8g",
     activeLoans: 1,
-    totalBorrowed: "2,500 wUSD",
+    totalBorrowed: "2,500 USD",
     creditScore: "Excellent",
   },
   {
     address: "rD...q2c",
     activeLoans: 5,
-    totalBorrowed: "50,000 wUSD",
+    totalBorrowed: "50,000 USD",
     creditScore: "Fair",
   },
 ];

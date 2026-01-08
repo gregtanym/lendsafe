@@ -4,17 +4,17 @@
 const lenders = [
   {
     address: "rL...e9d",
-    totalDeposited: "1,250,000 wUSD",
+    totalDeposited: "1,250,000 USD",
     share: "50%",
   },
   {
     address: "rN...t2f",
-    totalDeposited: "750,000 wUSD",
+    totalDeposited: "750,000 USD",
     share: "30%",
   },
   {
     address: "rG...b5k",
-    totalDeposited: "500,000 wUSD",
+    totalDeposited: "500,000 USD",
     share: "20%",
   },
 ];

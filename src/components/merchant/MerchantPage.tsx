@@ -8,8 +8,8 @@ export default function MerchantPage() {
   const [usdAmount, setUsdAmount] = useState("");
   const [xrpAmount, setXrpAmount] = useState(0);
 
-  // Mock exchange rate: 1 wUSD = 1.5 XRP
-  const exchangeRate = 1.5;
+  // 1 USD = 0.1 XRP
+  const exchangeRate = 0.1;
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const amount = e.target.value;
@@ -24,7 +24,7 @@ export default function MerchantPage() {
 
   const handleSwap = () => {
     // Logic for the swap would go here
-    console.log(`Swapping ${usdAmount} wUSD for ${xrpAmount} XRP...`);
+    console.log(`Swapping ${usdAmount} USD for ${xrpAmount} XRP...`);
     alert("Swap functionality not yet implemented.");
   };
 
@@ -38,7 +38,7 @@ export default function MerchantPage() {
           <div className="p-8 bg-gray-800 rounded-lg shadow-xl">
             <div className="mb-4">
               <label htmlFor="usd-amount" className="block mb-2 text-sm font-medium text-gray-300">
-                You pay (wUSD)
+                You pay (USD)
               </label>
               <input
                 type="number"
@@ -72,7 +72,7 @@ export default function MerchantPage() {
             </button>
           </div>
           <p className="text-xs text-gray-500 text-center mt-4">
-            Exchange Rate: 1 wUSD ≈ {exchangeRate} XRP
+            Exchange Rate: 1 USD = 0.1 XRP
           </p>
         </div>
       </main>

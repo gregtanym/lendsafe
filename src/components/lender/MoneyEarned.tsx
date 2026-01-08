@@ -11,7 +11,7 @@ export const MoneyEarned = () => {
         <ArrowTrendingUpIcon className="h-8 w-8 text-green-400 mr-4" />
         <div>
           <p className="text-sm text-gray-400">Total Interest Earned</p>
-          <p className="text-2xl font-bold">{amount} wUSD</p>
+          <p className="text-2xl font-bold">{amount} USD</p>
         </div>
       </div>
     </div>
