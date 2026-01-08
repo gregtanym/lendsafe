@@ -48,7 +48,6 @@ export const VerificationModal = ({ isOpen, onClose }) => {
           <div>
             <label htmlFor="docs" className="block mb-1 text-sm font-medium text-gray-300">Financial & Legal Documents</label>
             <input type="file" id="docs" className="w-full file-input-style" multiple />
-             <p className="text-xs text-gray-500 mt-1">For demo purposes, you can ignore this field.</p>
           </div>
           
           <div className="pt-4">

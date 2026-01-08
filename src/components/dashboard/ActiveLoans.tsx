@@ -1,36 +1,39 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useWallet } from '@/contexts/WalletContext';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
-// Mock data for active loans with installment plans
-const loans = [
-  {
-    id: "LN-002",
-    amount: "10,000 wUSD",
-    interestRate: "4.5%",
-    dueDate: "2025-03-01",
-    status: "Active",
-    installments: [
-        { id: 1, dueDate: "2024-06-15", amount: "5,050 wUSD", status: "Paid" },
-        { id: 2, dueDate: "2024-07-15", amount: "5,050 wUSD", status: "Due" },
-    ]
-  },
-  {
-    id: "LN-004",
-    amount: "50,000 wUSD",
-    interestRate: "5.0%",
-    dueDate: "2025-08-01",
-    status: "Active",
-    installments: [
-        { id: 1, dueDate: "2024-07-01", amount: "25,075 wUSD", status: "Due" },
-        { id: 2, dueDate: "2024-08-01", amount: "25,075 wUSD", status: "Pending" },
-    ]
-  },
-];
-
-export const ActiveLoans = () => {
+export const ActiveLoans = ({ refreshSignal }) => {
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [loans, setLoans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { wallet } = useWallet();
+
+  useEffect(() => {
+    const fetchLoans = async () => {
+      if (!wallet?.address) return;
+
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/loans');
+        if (!response.ok) {
+          throw new Error('Failed to fetch loans');
+        }
+        const allLoans = await response.json();
+        // Filter loans for the current borrower
+        const borrowerLoans = allLoans.filter(loan => loan.borrowerAccount === wallet.address);
+        setLoans(borrowerLoans);
+      } catch (error) {
+        console.error(error);
+        // Handle error state in UI if needed
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLoans();
+  }, [wallet?.address, refreshSignal]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -44,6 +47,14 @@ export const ActiveLoans = () => {
   const handleRowClick = (id: string) => {
     setExpandedRowId(expandedRowId === id ? null : id);
   };
+  
+  if (isLoading) {
+    return (
+        <div className="p-6 bg-gray-800 rounded-lg h-full flex justify-center items-center">
+            <p>Loading active loans...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-800 rounded-lg h-full">
@@ -68,9 +79,9 @@ export const ActiveLoans = () => {
                       {expandedRowId === loan.id ? <ChevronDownIcon className="h-4 w-4"/> : <ChevronRightIcon className="h-4 w-4"/>}
                     </td>
                     <td className="px-6 py-4 font-mono">{loan.id}</td>
-                    <td className="px-6 py-4">{loan.amount}</td>
-                    <td className="px-6 py-4">{loan.interestRate}</td>
-                    <td className="px-6 py-4">{loan.dueDate}</td>
+                    <td className="px-6 py-4">{loan.amount} wUSD</td>
+                    <td className="px-6 py-4">{loan.interestRate}%</td>
+                    <td className="px-6 py-4">{loan.installments[loan.installments.length - 1].dueDate}</td>
                   </tr>
                   {expandedRowId === loan.id && (
                     <tr className="bg-gray-900/50">
@@ -90,7 +101,7 @@ export const ActiveLoans = () => {
                               {loan.installments.map((inst: any) => (
                                 <tr key={inst.id} className="border-t border-gray-700">
                                   <td className="px-4 py-2">{inst.dueDate}</td>
-                                  <td className="px-4 py-2">{inst.amount}</td>
+                                  <td className="px-4 py-2">{inst.amount} wUSD</td>
                                   <td className="px-4 py-2">
                                     <span className={`px-2 py-1 font-medium rounded-full ${getStatusColor(inst.status)}`}>{inst.status}</span>
                                   </td>

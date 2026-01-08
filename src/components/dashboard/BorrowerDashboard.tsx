@@ -8,6 +8,14 @@ import { useState } from "react";
 
 export default function BorrowerDashboard({ isVerified, isVerificationLoading }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // This state will act as a signal to re-fetch loans
+  const [refreshSignal, setRefreshSignal] = useState(0);
+
+  const handleLoanCreated = () => {
+    // Close the modal and trigger the refresh signal for the ActiveLoans table
+    setIsModalOpen(false);
+    setRefreshSignal(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -35,7 +43,7 @@ export default function BorrowerDashboard({ isVerified, isVerificationLoading })
 
           {/* Right column for Active Loans */}
           <div className="md:col-span-2">
-            <ActiveLoans />
+            <ActiveLoans refreshSignal={refreshSignal} />
           </div>
         </div>
       </main>
@@ -43,6 +51,7 @@ export default function BorrowerDashboard({ isVerified, isVerificationLoading })
       <LoanRequestModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onLoanCreated={handleLoanCreated}
       />
     </div>
   );
