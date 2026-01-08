@@ -8,11 +8,11 @@ import MerchantPage from "@/components/merchant/MerchantPage";
 import { Header } from "@/components/Header";
 
 export default function Home() {
-  const { isConnected, role } = useWallet();
+  const { isConnected, role, isVerified, isVerificationLoading } = useWallet();
 
   if (isConnected) {
     if (role === 'borrower') {
-      return <BorrowerDashboard />;
+      return <BorrowerDashboard isVerified={isVerified} isVerificationLoading={isVerificationLoading} />;
     }
     if (role === 'lender') {
       return <LenderDashboard />;

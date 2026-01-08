@@ -10,12 +10,15 @@ import { Client, Wallet } from "xrpl";
 import { connect, disconnect, getAccountInfo } from "@/lib/xrpl";
 import { getPublicKey } from "@gemwallet/api";
 import { useGemWallet } from "./gemWalletContext";
+import { useFunctions } from "./FunctionsContext.jsx";
 
 interface WalletContextType {
   client: Client | null;
   wallet: { address: string } | null;
   accountInfo: any | null;
   isConnected: boolean;
+  isVerified: boolean;
+  isVerificationLoading: boolean;
   role: string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
@@ -28,8 +31,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [wallet, setWallet] = useState<{ address: string } | null>(null);
   const [accountInfo, setAccountInfo] = useState<any | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const { isInstalled } = useGemWallet();
+  const { isUserVerified } = useFunctions();
 
   const connectWallet = async () => {
     if (!isInstalled) {
@@ -56,6 +62,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
           if (walletData.address === borrowerWallet.address) {
             setRole("borrower");
+            setIsVerificationLoading(true);
+            const verificationStatus = await isUserVerified(walletData.address);
+            setIsVerified(verificationStatus);
+            setIsVerificationLoading(false);
           } else if (walletData.address === lenderWallet.address) {
             setRole("lender");
           } else if (walletData.address === vaultWallet.address) {
@@ -84,6 +94,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       setAccountInfo(null);
       setIsConnected(false);
       setRole(null);
+      setIsVerified(false);
     }
   };
 
@@ -94,6 +105,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         wallet,
         accountInfo,
         isConnected,
+        isVerified,
+        isVerificationLoading,
         role,
         connectWallet,
         disconnectWallet,

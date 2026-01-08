@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { GemWalletProvider } from "@/contexts/gemWalletContext";
+import { FunctionsProvider } from "@/contexts/FunctionsContext.jsx";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <GemWalletProvider>
-          <WalletProvider>{children}</WalletProvider>
-        </GemWalletProvider>
+        <FunctionsProvider>
+          <GemWalletProvider>
+            <WalletProvider>
+              {children}
+            </WalletProvider>
+          </GemWalletProvider>
+        </FunctionsProvider>
       </body>
     </html>
   );
