@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { CirculatingSupply } from "./CirculatingSupply";
 import { TotalXRP } from "./TotalXRP";
 import { ProtocolFees } from "./ProtocolFees";
-import { NetFlow } from "./NetFlow";
+import { ValueUnlocked } from "./ValueUnlocked";
 import { LoanHistory } from "./LoanHistory";
 import { BorrowerProfiles } from "./BorrowerProfiles";
 import { LenderProfiles } from "./LenderProfiles";
@@ -22,8 +22,8 @@ export default function VaultDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <CirculatingSupply />
           <TotalXRP />
+          <ValueUnlocked />
           <ProtocolFees />
-          <NetFlow />
         </div>
 
         {/* Loan History (Full Width) */}

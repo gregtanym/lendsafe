@@ -10,7 +10,7 @@ export const ProtocolFees = () => {
       <div className="flex items-center">
         <ScaleIcon className="h-8 w-8 text-yellow-400 mr-4" />
         <div>
-          <p className="text-sm text-gray-400">Accumulated Fees (USD)</p>
+          <p className="text-sm text-gray-400">Accumulated Fees (XRP)</p>
           <p className="text-2xl font-bold">{amount}</p>
         </div>
       </div>
