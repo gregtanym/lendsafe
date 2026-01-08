@@ -10,8 +10,13 @@ export const VerificationModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formData = {
+      companyName: e.target.companyName.value,
+      contactEmail: e.target.contactEmail.value,
+    };
+    
     if (wallet?.address) {
-      await startVerificationWorkflow(wallet.address);
+      await startVerificationWorkflow(wallet.address, formData);
     } else {
       alert("Wallet is not connected.");
     }
@@ -39,11 +44,11 @@ export const VerificationModal = ({ isOpen, onClose }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="companyName" className="block mb-1 text-sm font-medium text-gray-300">Company Name</label>
-            <input type="text" id="companyName" defaultValue="Acme Inc." className="w-full input-style" />
+            <input type="text" id="companyName" required placeholder="e.g. Acme Inc." className="w-full input-style" />
           </div>
           <div>
-            <label htmlFor="poc" className="block mb-1 text-sm font-medium text-gray-300">Point of Contact</label>
-            <input type="text" id="poc" defaultValue="John Doe" className="w-full input-style" />
+            <label htmlFor="contactEmail" className="block mb-1 text-sm font-medium text-gray-300">Contact Email</label>
+            <input type="email" id="contactEmail" required placeholder="e.g. contact@company.com" className="w-full input-style" />
           </div>
           <div>
             <label htmlFor="docs" className="block mb-1 text-sm font-medium text-gray-300">Financial & Legal Documents</label>

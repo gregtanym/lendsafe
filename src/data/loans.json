@@ -52,5 +52,113 @@
         "status": "Terminated"
       }
     ]
+  },
+  {
+    "id": "LN-CNKIKR",
+    "borrowerAccount": "r9PVikJnAt4KcxBzrENNyaEYmYmF1SmGk3",
+    "amount": "1000",
+    "totalAmountOwed": "1048.80",
+    "term": 16,
+    "interestRate": "4.88",
+    "status": "Defaulted",
+    "issueDate": "2026-01-08",
+    "installments": [
+      {
+        "id": 1,
+        "dueDate": "2026-02-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 2,
+        "dueDate": "2026-03-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 3,
+        "dueDate": "2026-04-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 4,
+        "dueDate": "2026-05-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 5,
+        "dueDate": "2026-06-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 6,
+        "dueDate": "2026-07-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 7,
+        "dueDate": "2026-08-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 8,
+        "dueDate": "2026-09-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 9,
+        "dueDate": "2026-10-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 10,
+        "dueDate": "2026-11-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 11,
+        "dueDate": "2026-12-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 12,
+        "dueDate": "2027-01-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 13,
+        "dueDate": "2027-02-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 14,
+        "dueDate": "2027-03-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 15,
+        "dueDate": "2027-04-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      },
+      {
+        "id": 16,
+        "dueDate": "2027-05-08",
+        "amount": "65.55",
+        "status": "Terminated"
+      }
+    ]
   }
 ]

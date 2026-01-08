@@ -9,6 +9,8 @@ export const LoanHistory = ({ onRefresh }: { onRefresh?: () => void }) => {
   const [loans, setLoans] = useState([]);
   const [borrowers, setBorrowers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   
   const { clawbackFunds, isLoading: isClawbackLoading } = useFunctions();
 
@@ -38,11 +40,22 @@ export const LoanHistory = ({ onRefresh }: { onRefresh?: () => void }) => {
 
   const handleClawback = async (borrowerAddress: string) => {
     if (confirm("Are you sure you want to clawback funds and default all loans for this borrower? This action cannot be undone.")) {
-      await clawbackFunds(borrowerAddress);
-      // Refresh the table to show updated statuses
-      fetchData();
-      // Signal parent to refresh other metrics
-      if (onRefresh) onRefresh();
+      try {
+        await clawbackFunds(borrowerAddress);
+        setMessageType('success');
+        setActionMessage("Clawback successful! Loans defaulted and credential revoked.");
+        
+        // Refresh the table to show updated statuses
+        fetchData();
+        // Signal parent to refresh other metrics
+        if (onRefresh) onRefresh();
+      } catch (error) {
+        setMessageType('error');
+        setActionMessage("Clawback failed. Please try again.");
+        console.error(error);
+      } finally {
+        setTimeout(() => setActionMessage(null), 5000);
+      }
     }
   };
 
@@ -91,8 +104,15 @@ export const LoanHistory = ({ onRefresh }: { onRefresh?: () => void }) => {
   }
 
   return (
-    <div className="p-6 bg-gray-800 rounded-lg h-full">
-      <h3 className="text-xl font-semibold mb-4">Loan History</h3>
+    <div className="p-6 bg-gray-800 rounded-lg h-full relative">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold">Loan History</h3>
+        {actionMessage && (
+          <div className={`px-4 py-2 rounded text-sm font-bold ${messageType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+            {actionMessage}
+          </div>
+        )}
+      </div>
       <div className="overflow-x-auto max-h-[30rem]">
         <table className="min-w-full text-sm text-left text-gray-300">
           <thead className="text-xs text-gray-400 uppercase bg-gray-700/50 sticky top-0">
