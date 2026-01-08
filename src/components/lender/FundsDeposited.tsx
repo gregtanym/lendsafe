@@ -1,19 +1,73 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BanknotesIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { DepositWithdrawModal } from './DepositWithdrawModal';
+import { useWallet } from '@/contexts/WalletContext';
+import { useFunctions } from '@/contexts/FunctionsContext.jsx';
+import { Client, Wallet, dropsToXrp } from 'xrpl';
 
 export const FundsDeposited = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState<'deposit' | 'withdraw'>('deposit');
+  const [depositedAmount, setDepositedAmount] = useState<string>("Loading...");
+  const [walletBalance, setWalletBalance] = useState<string>("Loading...");
   
-  const depositedAmount = "1,250,000.00"; // Mock data
-  const walletBalance = "50,000.00"; // Mock data
+  const { wallet } = useWallet();
+  const { sendXRP, withdrawXRP, isLoading: isTxLoading } = useFunctions();
+
+  const fetchData = useCallback(async () => {
+    if (!wallet?.address) return;
+
+    try {
+      // 1. Get User's Net Deposit from DB
+      const depositsRes = await fetch(`/api/deposits?account=${wallet.address}`);
+      if (depositsRes.ok) {
+        const history = await depositsRes.json();
+        const netDeposit = history.reduce((acc: number, curr: any) => {
+          return curr.type === 'deposit' ? acc + parseFloat(curr.amount) : acc - parseFloat(curr.amount);
+        }, 0);
+        setDepositedAmount(netDeposit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+      }
+
+      // 2. Get User Wallet Balance from XRPL
+      const client = new Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL!, { connectionTimeout: 10000 });
+      await client.connect();
+      
+      const userInfo = await client.request({
+        command: "account_info",
+        account: wallet.address,
+        ledger_index: "validated"
+      });
+      const userXrp = dropsToXrp(userInfo.result.account_data.Balance);
+      setWalletBalance(parseFloat(userXrp).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+      await client.disconnect();
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+    }
+  }, [wallet?.address]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const openModal = (action: 'deposit' | 'withdraw') => {
     setModalAction(action);
     setIsModalOpen(true);
+  };
+
+  const handleTransaction = async (amount: string) => {
+    const numericAmount = parseFloat(amount);
+    if (numericAmount > 0 && wallet?.address) {
+      if (modalAction === 'deposit') {
+        await sendXRP(numericAmount, wallet.address);
+      } else {
+        await withdrawXRP(numericAmount, wallet.address);
+      }
+      setIsModalOpen(false);
+      fetchData(); // Refresh balances
+    }
   };
 
   return (
@@ -23,13 +77,13 @@ export const FundsDeposited = () => {
           <div className="flex items-center">
             <BanknotesIcon className="h-8 w-8 text-blue-400 mr-4" />
             <div>
-              <p className="text-sm text-gray-400">Total Funds Deposited</p>
-              <p className="text-2xl font-bold">{depositedAmount} USD</p>
+              <p className="text-sm text-gray-400">Your Deposited Funds</p>
+              <p className="text-2xl font-bold">{depositedAmount} XRP</p>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-700">
             <p className="text-sm text-gray-400">Your Wallet Balance</p>
-            <p className="font-semibold">{walletBalance} USD</p>
+            <p className="font-semibold">{walletBalance} XRP</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -54,6 +108,8 @@ export const FundsDeposited = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         action={modalAction}
+        onSubmit={handleTransaction}
+        isLoading={isTxLoading}
       />
     </>
   );

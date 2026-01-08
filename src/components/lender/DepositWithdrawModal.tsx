@@ -7,9 +7,11 @@ type DepositWithdrawModalProps = {
   isOpen: boolean;
   onClose: () => void;
   action: 'deposit' | 'withdraw';
+  onSubmit: (amount: string) => void;
+  isLoading?: boolean;
 };
 
-export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdrawModalProps) => {
+export const DepositWithdrawModal = ({ isOpen, onClose, action, onSubmit, isLoading = false }: DepositWithdrawModalProps) => {
   if (!isOpen) return null;
 
   const title = action === 'deposit' ? 'Deposit Funds' : 'Withdraw Funds';
@@ -17,9 +19,8 @@ export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdra
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const amount = e.currentTarget.amount.value;
-    console.log(`${action} submitted for amount:`, amount);
-    onClose();
+    const amount = (e.currentTarget.elements.namedItem('amount') as HTMLInputElement).value;
+    onSubmit(amount);
   };
 
   return (
@@ -33,7 +34,8 @@ export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdra
       >
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white disabled:text-gray-600"
+          disabled={isLoading}
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
@@ -46,7 +48,7 @@ export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdra
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-300">
-              Amount (USD)
+              Amount (XRP)
             </label>
             <input
               type="number"
@@ -55,25 +57,26 @@ export const DepositWithdrawModal = ({ isOpen, onClose, action }: DepositWithdra
               className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g., 10000"
               required
-              min="0.01"
-              step="0.01"
+              min="0.000001"
+              step="0.000001"
             />
           </div>
           <p className="text-xs text-gray-400 mb-6">
             {action === 'deposit' 
-              ? 'These funds will be added to the liquidity pool.'
-              : 'These funds will be withdrawn from the liquidity pool to your wallet.'}
+              ? 'These funds will be sent to the vault.'
+              : 'Withdrawal functionality is currently disabled.'}
           </p>
           <div className="flex justify-end">
             <button
               type="submit"
-              className={`px-6 py-2 font-bold text-white rounded-lg ${
+              disabled={isLoading}
+              className={`px-6 py-2 font-bold text-white rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed ${
                 action === 'deposit'
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-yellow-600 hover:bg-yellow-700'
               }`}
             >
-              {title}
+              {isLoading ? 'Processing...' : title}
             </button>
           </div>
         </form>

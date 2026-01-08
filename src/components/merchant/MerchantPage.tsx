@@ -3,10 +3,15 @@
 import { Header } from "@/components/Header";
 import { ArrowsRightLeftIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import { useFunctions } from "@/contexts/FunctionsContext.jsx";
+import { useWallet } from "@/contexts/WalletContext";
 
 export default function MerchantPage() {
   const [usdAmount, setUsdAmount] = useState("");
   const [xrpAmount, setXrpAmount] = useState(0);
+  
+  const { swapUSDForXRP, isLoading, statusMessage } = useFunctions();
+  const { wallet } = useWallet();
 
   // 1 USD = 0.1 XRP
   const exchangeRate = 0.1;
@@ -22,10 +27,15 @@ export default function MerchantPage() {
     }
   };
 
-  const handleSwap = () => {
-    // Logic for the swap would go here
-    console.log(`Swapping ${usdAmount} USD for ${xrpAmount} XRP...`);
-    alert("Swap functionality not yet implemented.");
+  const handleSwap = async () => {
+    if (!wallet?.address) {
+      alert("Please connect your wallet.");
+      return;
+    }
+    const numericAmount = parseFloat(usdAmount);
+    if (numericAmount > 0) {
+      await swapUSDForXRP(numericAmount, wallet.address);
+    }
   };
 
   return (
@@ -59,17 +69,23 @@ export default function MerchantPage() {
                 You receive (XRP)
               </label>
               <div className="w-full px-4 py-3 text-white bg-gray-700/50 border border-gray-600 rounded-lg text-lg">
-                {xrpAmount.toFixed(4)}
+                {xrpAmount.toFixed(6)}
               </div>
             </div>
 
             <button
               onClick={handleSwap}
-              disabled={!usdAmount || parseFloat(usdAmount) <= 0}
+              disabled={!usdAmount || parseFloat(usdAmount) <= 0 || isLoading}
               className="w-full py-3 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
-              Swap Now
+              {isLoading ? 'Processing Swap...' : 'Swap Now'}
             </button>
+            
+            {statusMessage && (
+              <div className="mt-4 text-center text-sm text-yellow-400">
+                {statusMessage}
+              </div>
+            )}
           </div>
           <p className="text-xs text-gray-500 text-center mt-4">
             Exchange Rate: 1 USD = 0.1 XRP

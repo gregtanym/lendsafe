@@ -167,6 +167,176 @@ export const FunctionsProvider = ({ children }) => {
     }
   }, []);
 
+  const sendXRP = useCallback(async (amount, userAddress) => {
+    setIsLoading(true);
+    try {
+      setStatusMessage("Initiating XRP deposit...");
+      const vaultWallet = xrpl.Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+      
+      const dropsAmount = xrpl.xrpToDrops(amount.toString());
+
+      const paymentTx = {
+        TransactionType: "Payment",
+        Destination: vaultWallet.address,
+        Amount: dropsAmount
+      };
+
+      console.log(`Depositing ${amount} XRP to Vault...`);
+      
+      const response = await submitTransaction({
+        transaction: paymentTx
+      });
+
+      if (response.type === "reject") {
+        throw new Error("User rejected the transaction.");
+      }
+
+      if (response.result?.hash) {
+        setStatusMessage("Deposit successful! Recording transaction...");
+        
+        await fetch('/api/deposits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            account: userAddress,
+            amount: amount,
+            type: 'deposit'
+          }),
+        });
+
+        setStatusMessage("Deposit recorded.");
+        return response.result.hash;
+      } else {
+         throw new Error("Deposit transaction failed.");
+      }
+
+    } catch (error) {
+      console.error("Deposit Error:", error);
+      setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  }, []);
+
+  const withdrawXRP = useCallback(async (amount, userAddress) => {
+    setIsLoading(true);
+    try {
+      setStatusMessage("Processing withdrawal from Vault...");
+      const client = new xrpl.Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL);
+      await client.connect();
+      
+      const vaultWallet = xrpl.Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+      const dropsAmount = xrpl.xrpToDrops(amount.toString());
+
+      const paymentTx = {
+        TransactionType: "Payment",
+        Account: vaultWallet.address,
+        Destination: userAddress,
+        Amount: dropsAmount
+      };
+
+      const prepared = await client.autofill(paymentTx);
+      const signed = vaultWallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+
+      if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+        setStatusMessage("Withdrawal successful! Recording transaction...");
+        
+        await fetch('/api/deposits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            account: userAddress,
+            amount: amount,
+            type: 'withdrawal'
+          }),
+        });
+
+        setStatusMessage("Withdrawal complete.");
+      } else {
+        throw new Error(`Withdrawal failed: ${result.result.meta.TransactionResult}`);
+      }
+      
+      await client.disconnect();
+
+    } catch (error) {
+      console.error("Withdrawal Error:", error);
+      setStatusMessage(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  }, []);
+
+  const swapUSDForXRP = useCallback(async (usdAmount, userAddress) => {
+    setIsLoading(true);
+    try {
+      const client = new xrpl.Client(process.env.NEXT_PUBLIC_XRPL_RPC_URL);
+      await client.connect();
+      const vaultWallet = xrpl.Wallet.fromSeed(process.env.NEXT_PUBLIC_VAULT_WALLET_SEED);
+
+      // Step 1: Merchant sends USD to Vault (Burn)
+      setStatusMessage("Step 1/2: Sending USD to Vault...");
+      
+      const paymentTx = {
+        TransactionType: "Payment",
+        Destination: vaultWallet.address,
+        Amount: {
+          currency: "USD",
+          issuer: vaultWallet.address,
+          value: usdAmount.toString()
+        }
+      };
+
+      const response = await submitTransaction({
+        transaction: paymentTx
+      });
+
+      if (response.type === "reject") {
+        throw new Error("User rejected the USD transfer.");
+      }
+
+      if (response.result?.hash) {
+        console.log("USD sent to vault. Hash:", response.result.hash);
+        
+        // Step 2: Vault sends XRP to Merchant (Redeem)
+        setStatusMessage("Step 2/2: Vault sending XRP...");
+        
+        // Rate: 1 USD = 0.1 XRP
+        const xrpAmount = usdAmount * 0.1;
+        const dropsAmount = xrpl.xrpToDrops(xrpAmount.toFixed(6));
+
+        const redeemTx = {
+          TransactionType: "Payment",
+          Account: vaultWallet.address,
+          Destination: userAddress,
+          Amount: dropsAmount
+        };
+
+        const prepared = await client.autofill(redeemTx);
+        const signed = vaultWallet.sign(prepared);
+        const result = await client.submitAndWait(signed.tx_blob);
+
+        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+          setStatusMessage(`Swap complete! Received ${xrpAmount} XRP.`);
+        } else {
+          throw new Error(`Vault failed to send XRP: ${result.result.meta.TransactionResult}`);
+        }
+
+      } else {
+         throw new Error("USD transfer failed.");
+      }
+
+    } catch (error) {
+      console.error("Swap Error:", error);
+      setStatusMessage(`Swap failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setStatusMessage(null), 5000);
+    }
+  }, []);
+
   const clawbackFunds = useCallback(async (borrowerAddress) => {
     console.log("Starting clawback process for:", borrowerAddress);
     setIsLoading(true);
@@ -377,7 +547,10 @@ export const FunctionsProvider = ({ children }) => {
     isUserVerified,
     requestAndMintLoan,
     payInstallment,
-    clawbackFunds
+    clawbackFunds,
+    sendXRP,
+    withdrawXRP,
+    swapUSDForXRP,
   };
 
   return (
